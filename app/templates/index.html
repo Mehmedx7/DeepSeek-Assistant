@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #chat-box {
+            scroll-behavior: smooth;
+        }
+
+        .typing {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typing 1s steps(5, end) infinite;
+        }
+
+        @keyframes typing {
+            0% { content: "."; }
+            33% { content: ".."; }
+            66% { content: "..."; }
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-white flex justify-center items-center h-screen">
+    <div class="w-full max-w-lg p-6 bg-gray-900 rounded-2xl shadow-2xl border border-gray-700">
+        <h1 class="text-3xl font-bold mb-4 text-center text-blue-400">⚡ AI Roasting Chatbot ⚡</h1>
+        
+        <div id="chat-box" class="h-96 overflow-y-auto bg-gray-800 p-4 rounded-lg mb-4 space-y-2">
+            <div class="text-center text-gray-400">🔥 Start a conversation! 🔥</div>
+        </div>
+
+        <div class="flex">
+            <input id="user-input" type="text" class="flex-1 p-3 rounded-lg text-black outline-none" placeholder="Ask something..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()" class="ml-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg">Send</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            let userInput = document.getElementById("user-input").value.trim();
+            if (!userInput) return;
+
+            let chatBox = document.getElementById("chat-box");
+
+            let userMessage = `<div class='p-3 bg-blue-600 rounded-lg text-white self-end max-w-[80%] ml-auto'>${userInput}</div>`;
+            chatBox.innerHTML += userMessage;
+
+            // Clear input
+            document.getElementById("user-input").value = "";
+
+            // Append typing animation
+            let typingIndicator = document.createElement("div");
+            typingIndicator.id = "typing";
+            typingIndicator.className = "p-3 text-gray-400";
+            typingIndicator.innerHTML = "AI is typing<span class='typing'></span>";
+            chatBox.appendChild(typingIndicator);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Fetch AI Response
+            let response = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userInput })
+            });
+
+            let result = await response.json();
+
+            // Remove typing animation
+            typingIndicator.remove();
+
+            // Append AI Response
+            let aiMessage = `<div class='p-3 bg-gray-700 rounded-lg text-green-300 max-w-[80%] mr-auto'>${result.response}</div>`;
+            chatBox.innerHTML += aiMessage;
+
+            // Scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") sendMessage();
+        }
+    </script>
+</body>
+</html>
