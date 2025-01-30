@@ -1,3 +1,3 @@
 # DeepSeek-Assistant
-AI Coding Assistant
+AI Assistant
 FastAPI
